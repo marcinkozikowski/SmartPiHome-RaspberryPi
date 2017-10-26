@@ -94,7 +94,7 @@ class MySubscribeCallback(SubscribeCallback):
             pin = message.message['pin_number']
             state = message.message['state']
             alarm_handler(pin,state)
-        elif(type=="motor"):
+        elif(type=="blind"):
             motor_number=message.message['number']
             direction = message.message['direction']
             time = message.message['time']
@@ -119,6 +119,7 @@ def blind_handler(motor_number,direction,motion_time):
             GPIO.output(Motor1A,GPIO.HIGH)
             GPIO.output(Motor1B,GPIO.LOW)
             GPIO.output(Motor1E,GPIO.HIGH)
+ 
             time.sleep(motion_time)
             GPIO.output(Motor1E,GPIO.LOW)
         elif(direction==0):
