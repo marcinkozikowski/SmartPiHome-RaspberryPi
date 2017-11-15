@@ -5,6 +5,8 @@ import sys
 import json
 import dht11
 import datetime
+import thread
+import threading
 from pubnub.pubnub import PubNub
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory
@@ -12,13 +14,15 @@ from pubnub.pnconfiguration import PNConfiguration
 from gpiozero import MotionSensor
 
 channel = 'SmartPiHome'
+motion = 0
+alarm =0
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
 #Read temp and humidity from 26 pin
 tempSensor = dht11.DHT11(pin=26)
 
-#Livinf room diod
+#Living room diod
 GPIO.setup(7,GPIO.OUT)   
 GPIO.setup(11,GPIO.OUT)
 
@@ -78,7 +82,7 @@ class MySubscribeCallback(SubscribeCallback):
             # encrypt messages and on live data feed it received plain text.
  
     def message(self, pubnub, message):
-        m =str(message.message)
+        m = str(message.message)
         type = message.message['type']
         print (type)
 
@@ -99,7 +103,11 @@ class MySubscribeCallback(SubscribeCallback):
             direction = message.message['direction']
             time = message.message['time']
             blind_handler(motor_number,direction,time)
-        
+        elif(type=='info'):
+            what = message.message['what']
+            if(what=="motion"):
+                play_alarm(int(message.message['isInMotion']))
+                
         pass  # Handle new message stored in message.message
  
 
@@ -110,6 +118,31 @@ pubnub.subscribe().channels(channel).execute()
 
 
 #Funkcje sterujace podezspolami
+
+def check_motion(alarm):
+    print "Motion detection thred started"
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(14,GPIO.IN)     #Define pin 3 as an output pin
+    GPIO.setup(11,GPIO.OUT)
+
+    while True:
+        i=GPIO.input(14)
+        if i==0:            #When output from motion sensor is LOW
+            publishMsg(i)
+            time.sleep(3)
+        elif i==1:               #When output from motion sensor is HIGH
+            publishMsg(i)
+            time.sleep(3)
+
+# Create thread to check motion detection
+try:
+    thread.start_new_thread(check_motion,(alarm,))
+except:
+   print "Error: unable to start thread"
+
+def publishMsg(isInMotion):
+    pubnub.publish().channel(channel).message({'type':'info','what':'motion','isInMotion':isInMotion}).sync()
 
 #Function to control dc motor go forward or backowards for some period of time
 def blind_handler(motor_number,direction,motion_time):
@@ -154,12 +187,27 @@ def led_light(pin_number,newState):
     GPIO.output(pin_number,newState)
     pubnub.publish().channel(channel).message({'type':'info','what':'light','pin':pin_number,'state':newState}).sync()
 
+
 #Function to control alarm buzzer
 def alarm_handler(pin_number,newState):
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(pin_number,GPIO.OUT)
-    GPIO.output(pin_number,newState)
+    global alarm
+    alarm = newState
+    if(alarm==0):
+        GPIO.output(pin_number,0)
     pubnub.publish().channel(channel).message({'type':'info','what':'alarm','pin':pin_number,'state':newState}).sync()
+
+def play_alarm(state):
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(11,GPIO.OUT)
+    if(alarm==0):
+        GPIO.output(11,0)
+    elif(alarm==1):
+        GPIO.output(11,state)
+
+            
+
         
 #Function to send new data about temp and humidity
 def temp_handler():
