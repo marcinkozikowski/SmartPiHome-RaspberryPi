@@ -84,7 +84,6 @@ class MySubscribeCallback(SubscribeCallback):
     def message(self, pubnub, message):
         m = str(message.message)
         type = message.message['type']
-        print (type)
 
         if(type == "light"):
             led_light(int(message.message['pin_number']),int(message.message['state']))
@@ -107,6 +106,7 @@ class MySubscribeCallback(SubscribeCallback):
             what = message.message['what']
             if(what=="motion"):
                 play_alarm(int(message.message['isInMotion']))
+                print("Motion" + str(message.message['isInMotion']))
                 
         pass  # Handle new message stored in message.message
  
@@ -120,10 +120,10 @@ pubnub.subscribe().channels(channel).execute()
 #Funkcje sterujace podezspolami
 
 def check_motion(alarm):
-    print "Motion detection thred started"
+    print "Motion detection thred started \n"
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(14,GPIO.IN)     #Define pin 3 as an output pin
+    GPIO.setup(14,GPIO.IN)     
     GPIO.setup(11,GPIO.OUT)
 
     while True:
@@ -205,6 +205,8 @@ def play_alarm(state):
         GPIO.output(11,0)
     elif(alarm==1):
         GPIO.output(11,state)
+        if(state==1):
+            pubnub.publish().channel(channel).message({'type':'info','what':'notification'}).sync()
 
             
 
