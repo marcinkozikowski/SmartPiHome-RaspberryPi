@@ -199,14 +199,20 @@ def alarm_handler(pin_number,newState):
     pubnub.publish().channel(channel).message({'type':'info','what':'alarm','pin':pin_number,'state':newState}).sync()
 
 def play_alarm(state):
+    buzzer =11
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(11,GPIO.OUT)
+    GPIO.setup(buzzer,GPIO.OUT)
+    b =GPIO.PWM(buzzer,1)
     if(alarm==0):
         GPIO.output(11,0)
     elif(alarm==1):
-        GPIO.output(11,state)
+        #GPIO.output(11,state)
         if(state==1):
             pubnub.publish().channel(channel).message({'type':'info','what':'notification'}).sync()
+            b.start(10);
+            time.sleep(4)
+            b.stop();
+        
 
             
 
