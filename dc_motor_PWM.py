@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BCM)
 Motor1A = 1
 Motor1B = 7
 Motor1E = 16
-PWM_Frequency = 8
+PWM_Frequency = 2
 
 Dutycycle1 = 10
 Dutycycke2 = 50

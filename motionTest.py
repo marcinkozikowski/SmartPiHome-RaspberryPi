@@ -12,8 +12,8 @@ GPIO.setup(14,GPIO.IN)
 while True:
     i=GPIO.input(14)
     if i==0:                 #When output from motion sensor is LOW
-        time.sleep(1)
+        time.sleep(3)
         print "No intruders",i
     elif i==1:               #When output from motion sensor is HIGH
-        time.sleep(1)
+        time.sleep(3)
         print "Intruder detected",i

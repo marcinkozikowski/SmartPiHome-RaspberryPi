@@ -8,25 +8,26 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(10,GPIO.OUT)
 pwm = GPIO.PWM(10,50)
 
-pwm.start(6)
+pwm.start(7.5)
 #krecenie w lewo
-pwm.ChangeDutyCycle(2.5)    # 0 stopni zamkniete drzwi
-time.sleep(3)
+pwm.ChangeDutyCycle(5)    # 0 stopni zamkniete drzwi
+time.sleep(2)
+
+#krecenie w prawo
+#pwm.start(7.5)
+pwm.ChangeDutyCycle(9.5)    #Neutral otwarte drzwi
+time.sleep(2)
+#set rotating servo
 pwm.stop()
 
+
 #zatrzymanie
-pwm.start(6)
-pwm.ChangeDutyCycle(7)
-time.sleep(2)
+pwm.ChangeDutyCycle(7.5)
+time.sleep(30)
 pwm.stop()
         
 
-#krecenie w prawo
-pwm.start(6)
-pwm.ChangeDutyCycle(10)    #Neutral otwarte drzwi
-time.sleep(3)
-#set rotating servo
-pwm.stop()
+
 
 #GPIO.cleanup()
         
