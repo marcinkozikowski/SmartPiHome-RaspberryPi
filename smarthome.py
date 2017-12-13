@@ -102,11 +102,12 @@ class MySubscribeCallback(SubscribeCallback):
             direction = message.message['direction']
             time = message.message['time']
             blind_handler(motor_number,direction,time)
+            print("Blind message recived")
         elif(type=='info'):
             what = message.message['what']
             if(what=="motion"):
                 play_alarm(int(message.message['isInMotion']))
-                print("Motion" + str(message.message['isInMotion']))
+                print("Motion " + str(message.message['isInMotion']))
                 
         pass  # Handle new message stored in message.message
  
@@ -149,19 +150,20 @@ def blind_handler(motor_number,direction,motion_time):
     if(motor_number==1):
         if(direction==1):
             print ("Turning motor1 forward",motion_time)
-            GPIO.output(Motor1A,GPIO.HIGH)
-            GPIO.output(Motor1B,GPIO.LOW)
-            GPIO.output(Motor1E,GPIO.HIGH)
- 
-            time.sleep(motion_time)
-            GPIO.output(Motor1E,GPIO.LOW)
+            #GPIO.output(Motor1A,GPIO.HIGH)
+            #GPIO.output(Motor1B,GPIO.LOW)
+            #GPIO.output(Motor1E,GPIO.HIGH)
+            #time.sleep(motion_time)
+            #GPIO.output(Motor1E,GPIO.LOW)
+            blinds_step_up(1)
         elif(direction==0):
             print ("Turning motor1 backwards",motion_time)
-            GPIO.output(Motor1A,GPIO.LOW)
-            GPIO.output(Motor1B,GPIO.HIGH)
-            GPIO.output(Motor1E,GPIO.HIGH)
-            time.sleep(motion_time)
-            GPIO.output(Motor1E,GPIO.LOW)
+            #GPIO.output(Motor1A,GPIO.LOW)
+            #GPIO.output(Motor1B,GPIO.HIGH)
+            #GPIO.output(Motor1E,GPIO.HIGH)
+            #time.sleep(motion_time)
+            #GPIO.output(Motor1E,GPIO.LOW)
+            blinds_step_down(1)
     elif(motor_number==2):
         if(direction==1):
             print ("Turning motor2 forward",motion_time)
@@ -178,7 +180,26 @@ def blind_handler(motor_number,direction,motion_time):
             time.sleep(motion_time)
             GPIO.output(Motor2E,GPIO.LOW)
     pubnub.publish().channel(channel).message({'type':'info','what':'motor','number':motor_number,'direction':direction,'time':motion_time}).sync()
-            
+
+def blinds_step_up(steps):
+    for x in range(0,steps):
+        time.sleep(1)
+        print ("Blind up")
+        GPIO.output(Motor1A,GPIO.LOW)
+        GPIO.output(Motor1B,GPIO.HIGH)
+        GPIO.output(Motor1E,GPIO.HIGH)
+        time.sleep(0.1)
+        GPIO.output(Motor1E,GPIO.LOW)
+
+def blinds_step_down(steps):
+    for x in range(0,steps):
+        time.sleep(1)
+        print ("Blind up")
+        GPIO.output(Motor1A,GPIO.HIGH)
+        GPIO.output(Motor1B,GPIO.LOW)
+        GPIO.output(Motor1E,GPIO.HIGH)
+        time.sleep(0.2)
+        GPIO.output(Motor1E,GPIO.LOW)
 
 #Control led light which (pinNumber of led and state on or off)
 def led_light(pin_number,newState):
@@ -237,13 +258,13 @@ def door_handler(door_number,newState):
     pwm.start(7.0)
     #zamykanie drzwi 
     if(newState==False):
-        pwm.ChangeDutyCycle(2.5)    # 0 stopni zamkniete drzwi
+        pwm.ChangeDutyCycle(2)    # 0 stopni zamkniete drzwi
         time.sleep(1)
         pubnub.publish().channel(channel).message({'type':'info','what':'door','pin':door_number,'state':newState}).sync()
 
     #otwieranie drzwi
     elif(newState==True):
-        pwm.ChangeDutyCycle(7.0)    #Neutral otwarte drzwi
+        pwm.ChangeDutyCycle(7)    #Neutral otwarte drzwi
         time.sleep(1)
         pubnub.publish().channel(channel).message({'type':'info','what':'door','pin':door_number,'state':newState}).sync()
     
