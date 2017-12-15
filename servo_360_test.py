@@ -5,29 +5,27 @@ import sys
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(10,GPIO.OUT)
-pwm = GPIO.PWM(10,50)
+GPIO.setup(8,GPIO.OUT)
+pwm = GPIO.PWM(8,50)
 
-pwm.start(7.5)
-#krecenie w lewo
-pwm.ChangeDutyCycle(5)    # 0 stopni zamkniete drzwi
-time.sleep(2)
+#kanaly 8 i 25 
 
-#krecenie w prawo
-#pwm.start(7.5)
-pwm.ChangeDutyCycle(9.5)    #Neutral otwarte drzwi
-time.sleep(2)
+#krecenie do gory
+pwm.start(50)
+pwm.ChangeDutyCycle(9.3)    #Neutral otwarte drzwi
+time.sleep(1)
+pwm.stop()
+time.sleep(5)
+
+
+
+pwm.start(50)
+#krecenie w rolety o dolu
+pwm.ChangeDutyCycle(6)    # 0 stopni zamkniete drzwi
+time.sleep(1)
+pwm.stop()
 #set rotating servo
-pwm.stop()
 
 
-#zatrzymanie
-pwm.ChangeDutyCycle(7.5)
-time.sleep(30)
-pwm.stop()
-        
-
-
-
-#GPIO.cleanup()
+GPIO.cleanup()
         
