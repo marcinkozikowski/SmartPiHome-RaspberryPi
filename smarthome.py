@@ -98,9 +98,9 @@ class MySubscribeCallback(SubscribeCallback):
             state = message.message['state']
             alarm_handler(pin,state)
         elif(type=="blind"):
-            motor_number=message.message['number']
-            direction = message.message['direction']
-            time = message.message['time']
+            motor_number=int(message.message['number'])
+            direction = int(message.message['direction'])
+            time = int(message.message['time'])
             blind_handler(motor_number,direction,time)
             print("Blind message recived")
         elif(type=='info'):
@@ -146,60 +146,29 @@ def publishMsg(isInMotion):
     pubnub.publish().channel(channel).message({'type':'info','what':'motion','isInMotion':isInMotion}).sync()
 
 #Function to control dc motor go forward or backowards for some period of time
-def blind_handler(motor_number,direction,motion_time):
-    if(motor_number==1):
-        if(direction==1):
-            print ("Turning motor1 forward",motion_time)
-            #GPIO.output(Motor1A,GPIO.HIGH)
-            #GPIO.output(Motor1B,GPIO.LOW)
-            #GPIO.output(Motor1E,GPIO.HIGH)
-            #time.sleep(motion_time)
-            #GPIO.output(Motor1E,GPIO.LOW)
-            blinds_step_up(1)
-        elif(direction==0):
-            print ("Turning motor1 backwards",motion_time)
-            #GPIO.output(Motor1A,GPIO.LOW)
-            #GPIO.output(Motor1B,GPIO.HIGH)
-            #GPIO.output(Motor1E,GPIO.HIGH)
-            #time.sleep(motion_time)
-            #GPIO.output(Motor1E,GPIO.LOW)
-            blinds_step_down(1)
-    elif(motor_number==2):
-        if(direction==1):
-            print ("Turning motor2 forward",motion_time)
-            GPIO.output(Motor2A,GPIO.HIGH)
-            GPIO.output(Motor2B,GPIO.LOW)
-            GPIO.output(Motor2E,GPIO.HIGH)
-            time.sleep(motion_time)
-            GPIO.output(Motor2E,GPIO.LOW)
-        elif(direction==0):
-            print ("Turning motor2 backwards",motion_time)
-            GPIO.output(Motor2A,GPIO.LOW)
-            GPIO.output(Motor2B,GPIO.HIGH)
-            GPIO.output(Motor2E,GPIO.HIGH)
-            time.sleep(motion_time)
-            GPIO.output(Motor2E,GPIO.LOW)
-    pubnub.publish().channel(channel).message({'type':'info','what':'motor','number':motor_number,'direction':direction,'time':motion_time}).sync()
+def blind_handler(motor_number,direction,turns):
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(motor_number,GPIO.OUT)
+    pwm = GPIO.PWM(motor_number,50)
+    if(direction==0):
+        #print ("Blind up")
+        #for i in range(0,turns):
+            pwm.start(7.5)
+            pwm.ChangeDutyCycle(9.3)    
+            time.sleep(turns*0.2)
+            pwm.stop()
+            time.sleep(0.5)
+    elif(direction==1):
+        #print ("Blind down")
+        #for i in range(0,turns):
+            pwm.start(6)
+            pwm.ChangeDutyCycle(6)    
+            time.sleep(turns*0.2)
+            pwm.stop()
+            time.sleep(0.5)
+    pubnub.publish().channel(channel).message({'type':'info','what':'motor','number':motor_number,'direction':direction,'time':turns}).sync()
 
-def blinds_step_up(steps):
-    for x in range(0,steps):
-        time.sleep(1)
-        print ("Blind up")
-        GPIO.output(Motor1A,GPIO.LOW)
-        GPIO.output(Motor1B,GPIO.HIGH)
-        GPIO.output(Motor1E,GPIO.HIGH)
-        time.sleep(0.1)
-        GPIO.output(Motor1E,GPIO.LOW)
 
-def blinds_step_down(steps):
-    for x in range(0,steps):
-        time.sleep(1)
-        print ("Blind up")
-        GPIO.output(Motor1A,GPIO.HIGH)
-        GPIO.output(Motor1B,GPIO.LOW)
-        GPIO.output(Motor1E,GPIO.HIGH)
-        time.sleep(0.2)
-        GPIO.output(Motor1E,GPIO.LOW)
 
 #Control led light which (pinNumber of led and state on or off)
 def led_light(pin_number,newState):
